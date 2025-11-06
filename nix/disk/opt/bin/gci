@@ -18,7 +18,7 @@ if ! git log --oneline -n1 >/dev/null 2>&1; then
 fi
 
 git add .
-git commit -m.
+git commit -m. || true
 
 if [ "$branch" == "main" ]; then
   if ! git checkout dev 2>/dev/null; then
