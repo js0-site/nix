@@ -30,7 +30,7 @@ if [ "$branch" == "main" ]; then
     fi
   fi
 
-  git merge main
+  git merge --no-ff --no-edit main
   git checkout main
   git reset --hard HEAD~1
   git checkout dev
