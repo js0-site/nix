@@ -34,7 +34,7 @@ await $`${join(DIR_SH, "init_git.sh")}`;
 
 await $`git pull`;
 
-let target_ips = [];
+const target_ips = [];
 if (TARGETS.length > 0) {
   for (const host_or_ip of TARGETS) {
     if (HOSTS_MAP[host_or_ip]) {
@@ -47,7 +47,7 @@ if (TARGETS.length > 0) {
     }
   }
 } else {
-  target_ips = Object.keys(HOSTS_MAP);
+  target_ips.push(...Object.keys(HOSTS_MAP));
   const targets_str = target_ips
     .map((ip) => `${HOSTS_MAP[ip]} (${ip})`)
     .join("\n");
