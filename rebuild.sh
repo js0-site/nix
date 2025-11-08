@@ -4,9 +4,7 @@ set -e
 DIR=$(realpath $0) && DIR=${DIR%/*}
 cd $DIR
 set -x
-
 ./sh/init_git.sh
-
 set +x
 
 git pull
