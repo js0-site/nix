@@ -5,9 +5,9 @@
   ...
 }: {
   imports = [
-    ./soft/ipv6_proxy.nix
     ./soft/ntpd-rs.nix
     ./soft/zram.nix
+    ./soft/ipv6_proxy.nix
     ./soft/nvim.nix
     ./soft/dool_dstat.nix
     ./soft/fish.nix

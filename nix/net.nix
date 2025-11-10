@@ -8,7 +8,7 @@
 }: {
   networking.useDHCP = false;
 
-  networking.extraHosts = lib.concatStringsSep "\n" (lib.mapAttrsToList (name: ip: "${ip} ${name}") hosts);
+  networking.extraHosts = lib.concatStringsSep "\n" (lib.mapAttrsToList (ip: name: "${ip} ${name}") hosts);
 
   networking.interfaces.${vps.interface} = {
     useDHCP = false;
