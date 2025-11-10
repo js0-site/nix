@@ -5,6 +5,4 @@ DIR=$(realpath $0) && DIR=${DIR%/*}
 cd $DIR
 set -x
 
-./sh/init_git.sh
-
-./deploy.js -y
+journalctl --no-hostname -o cat -xefuo $@

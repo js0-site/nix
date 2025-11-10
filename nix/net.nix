@@ -68,8 +68,4 @@
     "2606:4700:4700::1111" # Cloudflare DNS IPv6
     "2606:4700:4700::1001" # Cloudflare DNS IPv6 secondary
   ];
-
-  boot.kernel.sysctl = {
-    "net.ipv6.ip_nonlocal_bind" = 1;
-  };
 }

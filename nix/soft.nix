@@ -2,16 +2,20 @@
   pkgs,
   conf,
   ripgrep,
+  lib,
+  enable,
+  vps,
   ...
 }: {
-  imports = [
-    ./soft/ntpd-rs.nix
-    ./soft/zram.nix
-    ./soft/ipv6_proxy.nix
-    ./soft/nvim.nix
-    ./soft/dool_dstat.nix
-    ./soft/fish.nix
-  ];
+  imports =
+    [
+      ./soft/ntpd-rs.nix
+      ./soft/zram.nix
+      ./soft/nvim.nix
+      ./soft/dool_dstat.nix
+      ./soft/fish.nix
+    ]
+    ++ lib.optionals (lib.elem vps.hostname enable.ipv6_proxy) [ ./soft/ipv6_proxy.nix ];
 
   environment = {
     systemPackages = with pkgs; [

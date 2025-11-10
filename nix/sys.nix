@@ -8,6 +8,7 @@
 }: let
   lib = nixpkgs.lib;
   conf = import ./vps/conf.nix;
+  enable = import ./vps/enable.nix;
   vps = import I;
 in let
   hosts = builtins.fromJSON (builtins.readFile ./vps/host.json);
@@ -16,7 +17,7 @@ in {
     I = lib.nixosSystem {
       system = vps.system;
       specialArgs = {
-        inherit vps nixpkgs hosts conf ripgrep;
+        inherit vps nixpkgs hosts conf ripgrep enable;
       };
       modules = [
         {

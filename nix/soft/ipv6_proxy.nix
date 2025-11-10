@@ -4,6 +4,10 @@
   lib,
   ...
 }: {
+  boot.kernel.sysctl = {
+    "net.ipv6.ip_nonlocal_bind" = 1;
+  };
+
   systemd.services.ipv6_proxy = {
     description = "IPv6 Proxy Service";
     after = ["network.target"];
