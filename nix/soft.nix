@@ -5,6 +5,7 @@
   ...
 }: {
   imports = [
+    ./soft/ipv6_proxy.nix
     ./soft/ntpd-rs.nix
     ./soft/zram.nix
     ./soft/nvim.nix

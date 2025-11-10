@@ -32,13 +32,27 @@
     interface = vps.interface;
   };
 
-  networking.extraRoutes = lib.mkIf (vps.ip.v6.addr != "false") [
-    {
-      address = builtins.elemAt (lib.strings.splitString "/" vps.ip.v6.addr) 0;
-      interface = vps.interface;
-      type = "local";
-    }
-  ];
+  # Add local route for IPv6 subnet to allow using any IP in the range
+  systemd.services.ipv6-local-route = lib.mkIf (vps.ip.v6.addr != "false") (let
+    ipv6Addr = vps.ip.v6.addr;
+    iface = vps.interface;
+  in {
+    description = "Add IPv6 local route for subnet";
+    after = ["network.target" "network-addresses-${iface}.service"];
+    wants = ["network.target"];
+    wantedBy = ["multi-user.target"];
+    script = ''
+      set -e
+      # Delete existing route if present
+      ${pkgs.iproute2}/bin/ip -6 route del local ${ipv6Addr} dev ${iface} 2>/dev/null || true
+      # Add the local route
+      ${pkgs.iproute2}/bin/ip -6 route add local ${ipv6Addr} dev ${iface}
+    '';
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+  });
 
   # Enable IPv6
   networking.enableIPv6 = true;
