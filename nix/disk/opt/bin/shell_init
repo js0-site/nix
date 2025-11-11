@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+
+set -e
+DIR=$(realpath $0) && DIR=${DIR%/*}
+set -x
+
+nohup bash -c "nix-channel --add https://nixos.org/channels/nixos-unstable nixos && nix-channel --update" >/tmp/nix.update.log 2>&1 &
+
+CURL="curl --connect-timeout 5 --max-time 10 --retry 9 --retry-delay 0 -sSfL"
+
+nohup fish -c "$(
+  cat <<EOF
+set -x
+$CURL https://cdn.jsdelivr.net/gh/jorgebucaran/fisher/functions/fisher.fish | source
+fisher install jorgebucaran/fisher
+fisher install IlanCosman/tide
+fish -c "tide configure --auto --style=Lean --prompt_colors='True color' --show_time=No --lean_prompt_height='One line' --prompt_connection=Compact --prompt_connection_andor_frame_color=Dark --prompt_spacing=Compact --icons='Few icons' --transient=Yes;set -U tide_right_prompt_items cmd_duration status nix_shell context time;set -U tide_time_format '%H:%M'"
+EOF
+)" >/tmp/fish.init.log 2>&1 &
+
+cd ~/.config
+
+if [ ! -d nvim ]; then
+  nvim_config=/opt/nvim/config
+  if [ ! -d $nvim_config ]; then
+    mkdir -p /opt/nvim
+    git clone -b dev --depth=1 https://github.com/i18n-site/lazyvim.git $nvim_config
+  fi
+  ln -s $nvim_config nvim
+  nohup nvim --headless "+Lazy! sync" +qa >/tmp/nvim.init.log 2>&1 &
+fi
+
+cd $DIR
+
+rustup default nightly
+# cargo_install() {
+#   local exe=$1
+#   shift
+#   if ! command -v $exe &>/dev/null; then
+#     cargo install ${@:-$exe}
+#   fi
+# }
+
+# cargo_install cargo-binstall
+# cargo_install rg --git https://github.com/i18n-fork/ripgrep.git ripgrep fuzz
+
+cargo_binstall() {
+  if ! command -v $1 &>/dev/null; then
+    nohup cargo binstall -y ${2:-$1} >/tmp/cargo.$1.log 2>&1 &
+  fi
+}
+
+cargo_binstall add_space
+
+bash -c 'cargo binstall -y cargo-cache && cargo cache --remove-dir all' >/tmp/cargo.cache.log 2>&1
+
+bun_install() {
+  if ! command -v $1 &>/dev/null; then
+    nohup bun i -g ${2:-$1} >/tmp/bun.$1.log 2>&1 &
+  fi
+}
+
+bun_install ncu npm-check-updates
+bun_install gemini-next
+
+if ! command -v $(npm config get prefix)/bin/gemini 2>/dev/null; then
+  nohup npm i -g @google/gemini-cli >/tmp/npm.gemini.log 2>&1 &
+fi
+
+nix-collect-garbage -d
+rm -rf ~/.cache/nix
+
+MOUNT="mount -o remount,compress=zstd:"
+
+cat <<EOF >/tmp/btrfs.defragment.sh
+#!/usr/bin/env bash
+set -ex
+
+mount_zstd() {
+  for i in "\$@"; do
+    local i="/\$i"
+    ${MOUNT}7 \$i
+    btrfs filesystem defragment -r -czstd \$i
+    ${MOUNT}3 \$i
+  done
+}
+
+mount_zstd opt var/log root
+EOF
+
+chmod +x /tmp/btrfs.defragment.sh
+
+nohup /tmp/btrfs.defragment.sh >/tmp/btrfs.defragment.log 2>&1 &
