@@ -6,11 +6,9 @@
   enable,
   vps,
   ...
-}:
-let
-  addIf = service: lib.optionals (lib.elem vps.hostname enable.${service}) [ ./soft/${service}.nix ];
-in
-{
+}: let
+  addIf = service: lib.optionals (lib.elem vps.hostname enable.${service}) [./soft/${service}.nix];
+in {
   imports =
     [
       ./soft/ntpd-rs.nix
@@ -20,6 +18,7 @@ in
       ./soft/fish.nix
     ]
     ++ addIf "ipv6_proxy"
+    ++ addIf "redis_sentinel"
     ++ addIf "kvrocks";
 
   environment = {
