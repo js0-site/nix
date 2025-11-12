@@ -33,10 +33,9 @@
     serviceConfig = let
       pidFile = "/var/run/kvrocks/kvrocks.pid";
     in {
-      Type = "forking";
+      Type = "simple";
       User = "kvrocks";
       Group = "kvrocks";
-      PIDFile = pidFile;
       Restart = "on-failure";
       RestartSec = "1s";
 
