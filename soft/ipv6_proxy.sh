@@ -14,6 +14,7 @@ else
   cd ipv6_proxy
 fi
 
-RUSTFLAGS="-C target-cpu=native -C opt-level=3" cargo install --root /opt --force --path .
+RUSTFLAGS="-C target-cpu=native -C opt-level=3" cargo install --root . --force --path .
 
-$DIR/rsync.sh ipv6_proxy /opt/bin/ipv6_proxy
+cd bin
+$DIR/sh/rsync.sh ipv6_proxy ipv6_proxy /opt/bin

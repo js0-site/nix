@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 DIR=$(realpath $0) && DIR=${DIR%/*}
+echo $DIR
 cd $DIR
 set -e
 set -a
@@ -8,11 +9,28 @@ CONF=$(dirname $DIR)/nix/vps/disk/etc/kvrocks
 cd $CONF
 . conf.sh
 . sentinel.sh
-cd $DIR
 set +a
 set -x
 
-CONF=$CONF/kvrocks.conf
+send() {
+  $DIR/sh/rsync.sh kvrocks $@
+}
+
+cd /tmp
+if [ -d "nixos-kvrocks" ]; then
+  cd nixos-kvrocks
+  git pull
+else
+  git clone --depth=1 https://github.com/js0-dep/nixos-kvrocks.git
+  cd nixos-kvrocks
+fi
+
+./build.sh
+send result/bin/ /opt/bin
+
+cd /tmp
+CONF=kvrocks.conf
+rm -rf $CONF
 
 curl https://raw.githubusercontent.com/apache/kvrocks/refs/heads/unstable/kvrocks.conf -o $CONF
 
@@ -31,14 +49,6 @@ disable_cmd FLUSHDB FLUSHALL
 LOG_DIR=/var/log/kvrocks
 DATA_DIR=/var/lib/kvrocks
 
-# initdir() {
-#   mkdir -p $1
-#   chown -R kvrocks:kvrocks $1
-# }
-
-# initdir $LOG_DIR
-# initdir $DATA_DIR
-
 rconf '^rocksdb.compression .*' 'rocksdb.compression zstd'
 rconf '^rocksdb.enable_blob_files .*' 'rocksdb.enable_blob_files yes'
 rconf '^rocksdb.read_options.async_io .*' 'rocksdb.read_options.async_io yes'
@@ -53,10 +63,7 @@ rconf "^log-dir .*" "log-dir $LOG_DIR"
 
 rconf '^#?\s*resp3-enabled\s.*' 'resp3-enabled yes'
 rconf "^#?\s*requirepass .*" "requirepass $R_PASSWORD"
-
 rconf "^#?\s*masterauth .*" "masterauth $R_PASSWORD"
+rconf "^workers .*" "workers $(nproc)"
 
-# rconf "^workers .*" "workers $(nproc)"
-# if ! ip addr show | awk '/inet / {print $2}' | cut -d'/' -f1 | grep -q "$R_MASTER_IP"; then
-#   rconf "^#?\s*slaveof [^<].*" "slaveof $R_MASTER_IP $R_PORT"
-# fi
+send kvrocks.conf /etc/kvrocks

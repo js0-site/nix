@@ -16,6 +16,7 @@
       ./soft/fish.nix
     ]
     ++ lib.optionals (lib.elem vps.hostname enable.ipv6_proxy) [ ./soft/ipv6_proxy.nix ];
+    ++ lib.optionals (lib.elem vps.hostname enable.kvrocks) [ ./soft/kvrocks.nix ];
 
   environment = {
     systemPackages = with pkgs; [
