@@ -55,7 +55,7 @@ rconf '^workers .*' "workers $(nproc)"
 
 send $NAME.conf /etc/$NAME
 
-cd $($DIR/clone_or_pull.sh https://github.com/js0-dep/nixos-kvrocks.git)
+cd $($DIR/sh/clone_or_pull.sh https://github.com/js0-dep/nixos-kvrocks.git)
 
 ./build.sh
 send result/bin/ /opt/bin

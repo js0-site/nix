@@ -40,6 +40,6 @@ rconf "s/mymaster/$R_SENTINEL_NAME/g"
 
 send $NAME.conf /etc
 
-cd $($DIR/clone_or_pull.sh https://github.com/js0-dep/nixos_redis_sentinel.git)
+cd $($DIR/sh/clone_or_pull.sh https://github.com/js0-dep/nixos_redis_sentinel.git)
 ./build.sh
 send result/bin/ /opt/bin

@@ -4,7 +4,7 @@ set -e
 DIR=$(realpath $0) && DIR=${DIR%/*}
 cd $DIR
 set -x
-cd ../nix/vps
+cd nix/vps
 IP_LI=$(jq -r 'keys | join(" ")' host.json)
 
 cd disk/etc
