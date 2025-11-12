@@ -59,7 +59,7 @@
     script = let
       pidFile = "/var/run/kvrocks/kvrocks.pid";
     in ''
-      exec kvrocks -c /etc/kvrocks/kvrocks.conf --pidfile ${pidFile}
+      exec /opt/bin/kvrocks -c /etc/kvrocks/kvrocks.conf --pidfile ${pidFile}
     '';
   };
 }

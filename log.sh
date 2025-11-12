@@ -5,4 +5,4 @@ DIR=$(realpath $0) && DIR=${DIR%/*}
 cd $DIR
 set -x
 
-journalctl --no-hostname -o cat -xefuo $@
+exec journalctl --no-hostname -o cat -xefu $@
