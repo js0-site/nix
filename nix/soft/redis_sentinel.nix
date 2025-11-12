@@ -15,6 +15,7 @@
   systemd.tmpfiles.rules = [
     "d /var/log/redis_sentinel 0750 redis_sentinel redis_sentinel -"
     "d /var/run/redis_sentinel 0750 redis_sentinel redis_sentinel -"
+    "z /etc/redis_sentinel.conf 0640 redis_sentinel redis_sentinel -"
   ];
 
   systemd.services.redis_sentinel = {
@@ -25,8 +26,11 @@
     unitConfig = {
       ConditionPathExists = [
         "/etc/redis_sentinel.conf"
-        "/opt/bin/redis_sentinel"
+        "/opt/bin/redis-sentinel"
       ];
+      # 重启次数限制：1分钟内最多重启3次
+      StartLimitBurst = 3;
+      StartLimitIntervalSec = 60;
     };
 
     serviceConfig = {
@@ -35,10 +39,6 @@
       Group = "redis_sentinel";
       Restart = "on-failure";
       RestartSec = "1s";
-
-      # 重启次数限制：1分钟内最多重启3次
-      StartLimitBurst = 3;
-      StartLimitIntervalSec = 60;
 
       ReadWritePaths = [
         "/etc/redis_sentinel.conf"
@@ -53,7 +53,7 @@
     };
 
     script = ''
-      exec redis-sentinel /etc/redis_sentinel.conf
+      exec /opt/bin/redis-sentinel /etc/redis_sentinel.conf
     '';
   };
 }

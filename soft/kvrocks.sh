@@ -6,7 +6,6 @@ set -a
 CONF=$(dirname $DIR)/nix/vps/disk/etc/kvrocks
 cd $CONF
 . conf.sh
-. sentinel.sh
 set +a
 set -x
 
