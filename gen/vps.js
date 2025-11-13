@@ -23,4 +23,7 @@ User root`,
 ).join("\n\n");
 
 write(join(ROOT, "ssh.conf"), GEN);
-write(join(ROOT, "host.json"), JSON.stringify(Object.fromEntries(SSH_CONFIG)));
+write(
+  join(ROOT, "host.json"),
+  JSON.stringify(Object.fromEntries(SSH_CONFIG.map((i) => [i[1], i[0]]))),
+);
