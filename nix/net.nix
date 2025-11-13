@@ -72,17 +72,13 @@
   # Enable firewall and open necessary ports
   networking.firewall = {
     enable = true;
-    allowedUDPPorts =
-      [
-        443 # http3
-      ]
-      ++ lib.genAttrs (lib.range 60000 60009) (port: port); # mosh
+    allowedUDPPorts = [
+      443 # http3
+    ];
     allowedTCPPorts = [
       22 # SSH
       80 # HTTP
       443 # HTTPS
-      2010 # kvrocks
-      2011 # redis 哨兵
     ];
   };
 }

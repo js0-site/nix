@@ -4,6 +4,8 @@
   lib,
   ...
 }: {
+  networking.firewall.allowedTCPPorts = [ 2011 ];
+
   users.users.redis_sentinel = {
     isSystemUser = true;
     group = "redis_sentinel";

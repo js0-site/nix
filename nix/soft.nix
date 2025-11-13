@@ -16,6 +16,7 @@ in {
       ./soft/nvim.nix
       ./soft/dool_dstat.nix
       ./soft/fish.nix
+      ./soft/mosh.nix
     ]
     ++ addIf "ipv6_proxy"
     ++ addIf "redis_sentinel"
@@ -68,7 +69,6 @@ in {
       libtool
 
       shfmt
-      mosh
       fish
 
       nodePackages_latest.nodejs
@@ -123,7 +123,6 @@ in {
 
   programs = {
     fish.enable = true;
-    mosh.enable = true;
     zoxide = {
       enable = true;
       # enableFishIntegration = true;

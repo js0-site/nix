@@ -4,6 +4,8 @@
   lib,
   ...
 }: {
+  networking.firewall.allowedTCPPorts = [ 2010 ];
+
   users.users.kvrocks = {
     isSystemUser = true;
     group = "kvrocks";

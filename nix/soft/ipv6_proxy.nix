@@ -4,6 +4,8 @@
   lib,
   ...
 }: {
+  networking.firewall.allowedTCPPorts = [7812];
+
   boot.kernel.sysctl = {
     "net.ipv6.ip_nonlocal_bind" = 1;
   };
