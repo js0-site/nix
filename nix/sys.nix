@@ -31,7 +31,7 @@ in {
               ./net.nix
               ./init.nix
             ]
-            ++ (lib.optionals (vps.virt == "qemu" || vps.virt == "kvm") [
+            ++ (lib.optionals (builtins.elem vps.virt ["qemu" "kvm" "google"]) [
               "${nixpkgs}/nixos/modules/profiles/qemu-guest.nix"
             ]);
         }

@@ -19,6 +19,7 @@ in {
       ./soft/mosh.nix
     ]
     ++ addIf "ipv6_proxy"
+    ++ addIf "tailscale"
     ++ addIf "redis_sentinel"
     ++ addIf "kvrocks";
 
@@ -79,8 +80,6 @@ in {
       rustup
       cargo-binstall
       ripgrep.packages.${pkgs.stdenv.hostPlatform.system}.default
-
-      tailscale
     ];
 
     extraInit = ''
@@ -156,15 +155,6 @@ in {
     locate = {
       enable = true;
       package = pkgs.plocate;
-    };
-    tailscale = {
-      enable = true;
-      openFirewall = true;
-      authKeyFile = "${./vps}/tailscale.token"; # 90天后需要更换
-      extraUpFlags = [
-        # "--login-server=https://your-instance"
-        "--accept-dns=false" # if its' a server you prolly dont need magicdns
-      ];
     };
   };
 }

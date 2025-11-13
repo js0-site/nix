@@ -11,12 +11,11 @@
     then vps.ip.v6
     else null;
 in {
-  networking.useDHCP = false;
+  networking.useDHCP = vps.ip == 0;
 
   networking.extraHosts = lib.concatStringsSep "\n" (lib.mapAttrsToList (ip: name: "${ip} ${name}") hosts);
 
-  networking.interfaces.${vps.interface} = {
-    useDHCP = false;
+  networking.interfaces.${vps.interface} = lib.mkIf (vps.ip != 0) {
     ipv4.addresses = [
       {
         address = builtins.elemAt (lib.strings.splitString "/" vps.ip.v4.addr) 0;
@@ -31,8 +30,8 @@ in {
     ];
   };
 
-  networking.defaultGateway = lib.mkIf (vps.ip.v4.gateway != "false") vps.ip.v4.gateway;
-  networking.defaultGateway6 = lib.mkIf (ipv6 != null) {
+  networking.defaultGateway = lib.mkIf (vps.ip != 0 && vps.ip.v4.gateway != "false") vps.ip.v4.gateway;
+  networking.defaultGateway6 = lib.mkIf (vps.ip != 0 && ipv6 != null) {
     address = ipv6.gateway;
     interface = vps.interface;
   };

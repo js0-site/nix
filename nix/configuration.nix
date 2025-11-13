@@ -23,7 +23,7 @@
       availableKernelModules = [
         "btrfs"
         "virtio_pci"
-        # "virtio_scsi"
+        "virtio_scsi"
         # "nvme"
       ];
       kernelModules = lib.mkForce ["dm-snapshot"];
@@ -31,6 +31,14 @@
     kernel.sysctl = {
       "vm.overcommit_memory" = 1;
     };
+    kernelParams = ["console=ttyS0"];
+  };
+
+  # Google Cloud serial console
+  systemd.services."serial-getty@ttyS0" = {
+    enable = true;
+    wantedBy = ["getty.target"];
+    serviceConfig.Restart = "always";
   };
 
   hardware.enableRedistributableFirmware = true;
