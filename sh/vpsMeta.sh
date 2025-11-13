@@ -20,29 +20,15 @@ get_ip_addr() {
     else
       ip addr show "$INTERFACE" | grep "$ip_version " | awk '{print $2}' | head -n 1
     fi
-  else
-    exit 1
   fi
 }
 
 get_gateway() {
-  local gateway
-
-  gateway=$(ip $@ route | grep default | awk '{print $3}' | head -n 1)
-
-  if [ -z "$gateway" ]; then
-    exit 1
-  fi
-  echo $gateway
+  ip $@ route | grep default | awk '{print $3}' | head -n 1
 }
 
 IPV4_ADDR=$(get_ip_addr inet)
 IPV4_GATEWAY=$(get_gateway)
-
-IPV6_ADDR=$(get_ip_addr inet6 "fe80::")
-# 支持整个网段
-IPV6_ADDR=$(echo $IPV6_ADDR | sed 's/::1\//::\//')
-IPV6_GATEWAY=$(get_gateway -6)
 
 cat <<EOF
 system = "$(case "$ARCH" in
@@ -59,10 +45,23 @@ ip = {
     addr = "${IPV4_ADDR}";
     gateway = "${IPV4_GATEWAY}";
   };
+EOF
+
+IPV6_ADDR=$(get_ip_addr inet6 "fe80::")
+if [ -n "$IPV6_ADDR" ]; then
+  # 支持整个网段
+  IPV6_ADDR=$(echo $IPV6_ADDR | sed 's/::1\//::\//')
+  IPV6_GATEWAY=$(get_gateway -6)
+  cat <<EOF
   v6 = {
     addr = "${IPV6_ADDR}";
     gateway = "${IPV6_GATEWAY}";
   };
+EOF
+fi
+
+cat <<EOF
 };
 $(grep -m 1 '[^[:space:]]' /etc/issue)
 EOF
+

@@ -5,7 +5,12 @@
   vps,
   hosts,
   ...
-}: {
+}: let
+  ipv6 =
+    if (vps.ip ? "v6")
+    then vps.ip.v6
+    else null;
+in {
   networking.useDHCP = false;
 
   networking.extraHosts = lib.concatStringsSep "\n" (lib.mapAttrsToList (ip: name: "${ip} ${name}") hosts);
@@ -18,23 +23,23 @@
         prefixLength = builtins.fromJSON (builtins.elemAt (lib.strings.splitString "/" vps.ip.v4.addr) 1);
       }
     ];
-    ipv6.addresses = lib.mkIf (vps.ip.v6.addr != "false") [
+    ipv6.addresses = lib.mkIf (ipv6 != null) [
       {
-        address = builtins.elemAt (lib.strings.splitString "/" vps.ip.v6.addr) 0;
-        prefixLength = builtins.fromJSON (builtins.elemAt (lib.strings.splitString "/" vps.ip.v6.addr) 1);
+        address = builtins.elemAt (lib.strings.splitString "/" ipv6.addr) 0;
+        prefixLength = builtins.fromJSON (builtins.elemAt (lib.strings.splitString "/" ipv6.addr) 1);
       }
     ];
   };
 
   networking.defaultGateway = lib.mkIf (vps.ip.v4.gateway != "false") vps.ip.v4.gateway;
-  networking.defaultGateway6 = lib.mkIf (vps.ip.v6.gateway != "false") {
-    address = vps.ip.v6.gateway;
+  networking.defaultGateway6 = lib.mkIf (ipv6 != null) {
+    address = ipv6.gateway;
     interface = vps.interface;
   };
 
   # Add local route for IPv6 subnet to allow using any IP in the range
-  systemd.services.ipv6-local-route = lib.mkIf (vps.ip.v6.addr != "false") (let
-    ipv6Addr = vps.ip.v6.addr;
+  systemd.services.ipv6-local-route = lib.mkIf (ipv6 != null) (let
+    ipv6Addr = ipv6.addr;
     iface = vps.interface;
   in {
     description = "Add IPv6 local route for subnet";
