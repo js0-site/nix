@@ -8,6 +8,7 @@
     };
 
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
     disko.url = "github:nix-community/disko";
 
     home-manager = {
@@ -21,5 +22,20 @@
     };
   };
 
-  outputs = {...} @ inputs: (import ./nix/sys.nix inputs);
+  outputs = {
+    self,
+    nixpkgs,
+    flake-utils,
+    ...
+  } @ inputs:
+    flake-utils.lib.eachDefaultSystem (
+      system: let
+        pkgs = import nixpkgs {inherit system;};
+      in {
+        formatter = pkgs.nixfmt;
+      }
+    )
+    // {
+      nixosConfigurations = (import ./nix/sys.nix inputs).nixosConfigurations;
+    };
 }

@@ -15,3 +15,5 @@ conf=$(find nix/vps/conf -maxdepth 1 -type f -name '*.nix' | head -n 1)
 
 nix flake check path:. \
   --override-input I path:./$conf --no-build
+
+fd -e nix -x bash -c 'echo -e "\n→ {}" && alejandra {}'
