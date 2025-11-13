@@ -28,6 +28,9 @@
       ];
       kernelModules = lib.mkForce ["dm-snapshot"];
     };
+    kernel.sysctl = {
+      "vm.overcommit_memory" = 1;
+    };
   };
 
   hardware.enableRedistributableFirmware = true;

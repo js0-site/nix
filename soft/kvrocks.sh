@@ -3,9 +3,7 @@
 set -e
 DIR=$(realpath $0) && DIR=${DIR%/*}
 set -a
-CONF=$(dirname $DIR)/nix/vps/disk/etc/kvrocks
-cd $CONF
-. conf.sh
+. $(dirname $DIR)/nix/vps/disk/etc/kvrocks/conf.sh
 set +a
 set -x
 
@@ -15,8 +13,15 @@ send() {
   $DIR/sh/rsync.sh $NAME $@
 }
 
-cd /tmp
-CONF=kvrocks.conf
+TMP=$(mktemp -d)
+cleanup() {
+  rm -rf $TMP
+}
+trap cleanup EXIT
+mkdir -p $TMP/$NAME
+cd $TMP/$NAME
+
+CONF=$TMP/$NAME/$NAME.conf
 
 curl https://raw.githubusercontent.com/apache/kvrocks/refs/heads/unstable/kvrocks.conf -o $CONF
 
@@ -52,7 +57,16 @@ rconf '^rocksdb.read_options.async_io .*' 'rocksdb.read_options.async_io yes'
 rconf '^supervised .*' 'supervised systemd'
 rconf '^workers .*' "workers $(nproc)"
 
-send $NAME.conf /etc/$NAME
+cd ..
+id $NAME &>/dev/null && chown -R $NAME $NAME
+
+set -- $KVROCKS_IP_LI
+rsync -avz $NAME $1:/etc/
+shift
+sd '^#?\s*slaveof 127.*' "slaveof $1 $R_PORT" $CONF
+for ip; do
+  rsync -avz $NAME $ip:/etc/
+done
 
 cd $($DIR/sh/clone_or_pull.sh https://github.com/js0-dep/nixos-kvrocks.git)
 

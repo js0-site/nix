@@ -68,4 +68,21 @@
     "2606:4700:4700::1111" # Cloudflare DNS IPv6
     "2606:4700:4700::1001" # Cloudflare DNS IPv6 secondary
   ];
+
+  # Enable firewall and open necessary ports
+  networking.firewall = {
+    enable = true;
+    allowedUDPPorts =
+      [
+        443 # http3
+      ]
+      ++ lib.genAttrs (lib.range 60000 60009) (port: port); # mosh
+    allowedTCPPorts = [
+      22 # SSH
+      80 # HTTP
+      443 # HTTPS
+      2010 # kvrocks
+      2011 # redis 哨兵
+    ];
+  };
 }
