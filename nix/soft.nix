@@ -17,6 +17,7 @@ in {
       ./soft/dool_dstat.nix
       ./soft/fish.nix
       ./soft/mosh.nix
+      ./soft/mise.nix
     ]
     ++ addIf "ipv6_proxy"
     ++ addIf "tailscale"
@@ -45,7 +46,6 @@ in {
       python3
 
       tmux
-      mise
       neovim-unwrapped
 
       git
@@ -94,8 +94,6 @@ in {
       # EDITOR = "nvim";
       # VISUAL = "nvim";
       BUN_INSTALL = "/opt/bun";
-      MISE_CACHE_DIR = "/var/cache/mise";
-      MISE_DATA_DIR = "/opt/mise";
       PNPM_HOME = "/opt/pnpm";
       CARGO_HOME = "/opt/rust";
       RUSTUP_HOME = "/opt/rust";

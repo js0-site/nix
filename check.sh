@@ -5,7 +5,9 @@ DIR=$(realpath $0) && DIR=${DIR%/*}
 cd $DIR
 set -x
 
-fd -e nix -x bash -c 'echo -e "\n→ {}" && alejandra {}'
+if command -v alejandra 2>/dev/null; then
+  fd -e nix -x bash -c 'echo -e "\n→ {}" && alejandra {}'
+fi
 
 export NIX_CONFIG="extra-experimental-features = nix-command flakes"
 
