@@ -4,6 +4,14 @@
   lib,
   ...
 }: {
+  system.activationScripts = {
+    syncKvrocksConf = {
+      text = ''
+        ${pkgs.rsync}/bin/rsync -avz ${../vps}/soft/kvrocks /etc/
+      '';
+    };
+  };
+
   networking.firewall.allowedTCPPorts = [2010];
 
   users.users.kvrocks = {
@@ -52,20 +60,8 @@
       PrivateTmp = true;
       ProtectSystem = "strict";
       ProtectHome = true;
-    };
 
-    script = ''
-      set -ex
-      /etc/kvrocks/reconf.sh
-      exec /opt/bin/kvrocks -c /etc/kvrocks/kvrocks.conf
-    '';
-  };
-
-  system.activationScripts = {
-    syncKvrocksConf = {
-      text = ''
-        ${pkgs.rsync}/bin/rsync -avz ${../vps}/soft/kvrocks/ /
-      '';
+      ExecStart = "${pkgs.bash}/bin/bash -c 'export PATH=/opt/bin:$PATH && set -ex && /etc/kvrocks/reconf.sh && exec /opt/bin/kvrocks -c /etc/kvrocks/kvrocks.conf'";
     };
   };
 }
