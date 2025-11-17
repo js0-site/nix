@@ -35,9 +35,7 @@
       StartLimitIntervalSec = 60;
     };
 
-    serviceConfig = let
-      pidFile = "/var/run/kvrocks/kvrocks.pid";
-    in {
+    serviceConfig = {
       Type = "simple";
       User = "kvrocks";
       Group = "kvrocks";
@@ -56,19 +54,18 @@
       ProtectHome = true;
     };
 
-    script = let
-      pidFile = "/var/run/kvrocks/kvrocks.pid";
-    in ''
+    script = ''
       set -ex
       /etc/kvrocks/reconf.sh
-      exec /opt/bin/kvrocks -c /etc/kvrocks/kvrocks.conf --pidfile ${pidFile}
+      exec /opt/bin/kvrocks -c /etc/kvrocks/kvrocks.conf
     '';
   };
+
   system.activationScripts = {
     syncKvrocksConf = {
       text = ''
-        ${pkgs.rsync}/bin/rsync -avz ${./vps}/srv/kvrocks/ /
+        ${pkgs.rsync}/bin/rsync -avz ${../vps}/soft/kvrocks/ /
       '';
     };
-  }
+  };
 }

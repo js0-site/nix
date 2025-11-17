@@ -6,7 +6,7 @@ cd $DIR
 set -x
 
 if command -v alejandra 2>/dev/null; then
-  fd -e nix -x bash -c 'echo -e "\n→ {}" && alejandra {}'
+  fd -e nix -x bash -c 'alejandra -q {} || echo "❌ {}"'
 fi
 
 export NIX_CONFIG="extra-experimental-features = nix-command flakes"
