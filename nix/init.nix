@@ -14,7 +14,7 @@
     };
     syncDiskFiles = {
       text = ''
-        rsync="${pkgs.rsync}/bin/rsync -av"
+        rsync="${pkgs.rsync}/bin/rsync -avz"
         $rsync ${./disk}/ /
         $rsync ${./vps}/disk/ /
       '';

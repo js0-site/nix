@@ -71,6 +71,7 @@ in {
 
       shfmt
       fish
+      fishPlugins.bass
 
       nodePackages_latest.nodejs
       nodePackages_latest.pnpm
@@ -119,7 +120,14 @@ in {
   };
 
   programs = {
-    fish.enable = true;
+    fish = {
+      enable = true;
+      shellInit = ''
+        if test -z "$__NIXOS_SET_ENVIRONMENT_DONE"
+          bass source /etc/set-environment
+        end
+      '';
+    };
     zoxide = {
       enable = true;
       # enableFishIntegration = true;

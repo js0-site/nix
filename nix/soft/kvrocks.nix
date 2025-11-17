@@ -59,7 +59,16 @@
     script = let
       pidFile = "/var/run/kvrocks/kvrocks.pid";
     in ''
+      set -ex
+      /etc/kvrocks/reconf.sh
       exec /opt/bin/kvrocks -c /etc/kvrocks/kvrocks.conf --pidfile ${pidFile}
     '';
   };
+  system.activationScripts = {
+    syncKvrocksConf = {
+      text = ''
+        ${pkgs.rsync}/bin/rsync -avz ${./vps}/srv/kvrocks/ /
+      '';
+    };
+  }
 }
