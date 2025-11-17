@@ -20,6 +20,7 @@ const conf = async (name, redis) => {
         if (address) {
           const kvrocks_conf = "/etc/kvrocks/kvrocks.conf",
             conf_li = readFileSync(kvrocks_conf, "utf8")
+              .trim()
               .split("\n")
               .filter(
                 (i) =>
@@ -36,7 +37,7 @@ const conf = async (name, redis) => {
           if (is_slave) {
             conf_li.push("replicaof " + address.replace(":", " "));
           }
-          writeFileSync(kvrocks_conf, conf_li.join("\n"));
+          writeFileSync(kvrocks_conf, conf_li.join("\n") + "\n");
         }
         return;
       }
