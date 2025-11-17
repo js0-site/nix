@@ -7,7 +7,8 @@
   system.activationScripts = {
     syncKvrocksConf = {
       text = ''
-        ${pkgs.rsync}/bin/rsync -avz ${../vps}/soft/kvrocks /etc/
+        ${pkgs.rsync}/bin/rsync -avz ${./kvrocks} /etc/
+        chown -R kvrocks /etc/kvrocks
       '';
     };
   };
@@ -26,6 +27,7 @@
     "d /var/lib/kvrocks 0750 kvrocks kvrocks -"
     "d /var/log/kvrocks 0750 kvrocks kvrocks -"
     "d /var/run/kvrocks 0750 kvrocks kvrocks -"
+    "d /etc/kvrocks 0750 kvrocks kvrocks -"
   ];
 
   systemd.services.kvrocks = {
@@ -54,6 +56,7 @@
         "/var/lib/kvrocks"
         "/var/log/kvrocks"
         "/var/run/kvrocks"
+        "/etc/kvrocks"
       ];
 
       NoNewPrivileges = true;

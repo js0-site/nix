@@ -1,0 +1,62 @@
+#!/usr/bin/env bun
+
+import { RedisClient } from "bun";
+import { readFileSync, writeFileSync } from "node:fs";
+import { networkInterfaces } from "node:os";
+
+const conf = async (name, redis) => {
+  const info = (await redis.send("INFO", ["sentinel"])).split("\n");
+  for (let line of info) {
+    if (line.startsWith("master")) {
+      const conf = new Map(
+        line
+          .slice(line.indexOf(":") + 1)
+          .trimEnd()
+          .split(",")
+          .map((i) => i.split("=")),
+      );
+      if (conf.get("name") == name) {
+        const address = conf.get("address");
+        if (address) {
+          const kvrocks_conf = "/etc/kvrocks/kvrocks.conf",
+            conf_li = readFileSync(kvrocks_conf, "utf8")
+              .split("\n")
+              .filter((i) => !i.startsWith("slaveof "));
+
+          let is_slave = 0;
+          for (const i of networkInterfaces().eth0) {
+            if (address.startsWith(i.address + ":")) {
+              is_slave = 1;
+              break;
+            }
+          }
+          if (is_slave) {
+            conf_li.push("slaveof " + address.replace(":", " "));
+          }
+          writeFileSync(kvrocks_conf, conf_li.join("\n"));
+        }
+        return;
+      }
+    }
+  }
+};
+
+await (async () => {
+  const { R_SENTINEL_PASSWORD, R_SENTINEL_NAME, R_NODE } = process.env;
+  for (const node of R_NODE.split(" ")) {
+    const redis = new RedisClient(
+      "redis://:" + R_SENTINEL_PASSWORD + "@" + node,
+    );
+    try {
+      await redis.connect();
+      await conf(R_SENTINEL_NAME, redis);
+      return;
+    } catch (e) {
+      console.error(node, e);
+    } finally {
+      redis.close();
+    }
+  }
+})();
+
+process.exit();

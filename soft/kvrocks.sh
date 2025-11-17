@@ -60,24 +60,7 @@ rconf '^workers .*' "workers $(nproc)"
 cd ..
 id $NAME &>/dev/null && chown -R $NAME $NAME
 
-sd '^#?\s*slaveof 127.*' "slaveof " $CONF
-
-sync_conf() {
-  local li=($KVROCKS_IP_LI)
-  for i in "${!li[@]}"; do
-    local ip
-    if [ "$i" -eq 0 ]; then
-      ip="${li[1]}"
-    else
-      ip="${li[0]}"
-    fi
-    sd "^slaveof .*" "slaveof $ip $R_PORT" $CONF
-    rsync -avz $NAME ${li[i]}:/etc/
-  done
-
-}
-
-sync_conf
+$DIR/sh/rsync.sh $NAME $NAME /etc
 
 cd $($DIR/sh/clone_or_pull.sh https://github.com/js0-dep/nixos-kvrocks.git)
 
