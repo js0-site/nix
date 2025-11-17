@@ -61,7 +61,7 @@
       ProtectSystem = "strict";
       ProtectHome = true;
 
-      ExecStart = "${pkgs.bash}/bin/bash -c 'export PATH=/opt/bin:$PATH && set -ex && /etc/kvrocks/reconf.sh && exec /opt/bin/kvrocks -c /etc/kvrocks/kvrocks.conf'";
+      ExecStart = "${pkgs.bash}/bin/bash -c 'set -ex && export PATH=/run/current-system/sw/bin && /etc/kvrocks/reconf.sh && exec /opt/bin/kvrocks -c /etc/kvrocks/kvrocks.conf'";
     };
   };
 }
