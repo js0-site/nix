@@ -3,17 +3,22 @@
   pkgs,
   lib,
   ...
-}: {
-  system.activationScripts = {
-    syncKvrocksConf = {
-      text = ''
-        ${pkgs.rsync}/bin/rsync -avz ${./kvrocks} /etc/
-        chown -R kvrocks /etc/kvrocks
-      '';
-    };
+}: let
+  etc_conf = {
+    "reconf.sh" = "0755";
+    "reconf.js" = "0644";
   };
-
+in {
   networking.firewall.allowedTCPPorts = [2010];
+
+  environment.etc = lib.mapAttrs' (name: mode:
+    lib.nameValuePair "kvrocks/${name}" {
+      source = ./kvrocks/${name};
+      inherit mode;
+      user = "kvrocks";
+      group = "kvrocks";
+    })
+  etc_conf;
 
   users.users.kvrocks = {
     isSystemUser = true;

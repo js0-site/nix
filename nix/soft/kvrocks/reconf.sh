@@ -8,4 +8,4 @@ set -a
 set +a
 set -x
 
-./reconf.js
+bun reconf.js

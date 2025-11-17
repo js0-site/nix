@@ -21,17 +21,20 @@ const conf = async (name, redis) => {
           const kvrocks_conf = "/etc/kvrocks/kvrocks.conf",
             conf_li = readFileSync(kvrocks_conf, "utf8")
               .split("\n")
-              .filter((i) => !i.startsWith("slaveof "));
+              .filter(
+                (i) =>
+                  !(i.startsWith("slaveof ") || i.startsWith("replicaof ")),
+              );
 
-          let is_slave = 0;
+          let is_slave = 1;
           for (const i of networkInterfaces().eth0) {
             if (address.startsWith(i.address + ":")) {
-              is_slave = 1;
+              is_slave = 0;
               break;
             }
           }
           if (is_slave) {
-            conf_li.push("slaveof " + address.replace(":", " "));
+            conf_li.push("replicaof " + address.replace(":", " "));
           }
           writeFileSync(kvrocks_conf, conf_li.join("\n"));
         }
