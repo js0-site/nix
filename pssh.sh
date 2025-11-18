@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 
 set -e
+if [ -z "$1" ]; then
+  echo "$0 <cmd>"
+  exit 1
+fi
 DIR=$(realpath $0) && DIR=${DIR%/*}
 cd $DIR
 set -x

@@ -18,6 +18,7 @@ in {
       ./soft/fish.nix
       ./soft/mosh.nix
       ./soft/mise.nix
+      ./soft/rust.nix
     ]
     ++ addIf "ipv6_proxy"
     ++ addIf "tailscale"
@@ -35,6 +36,7 @@ in {
       zoxide # z 跳转目录
       atuin
       sshpass
+      pssh
 
       rsync
       uutils-coreutils
@@ -79,16 +81,9 @@ in {
       jq
       bun
 
-      rustup
       cargo-binstall
       ripgrep.packages.${pkgs.stdenv.hostPlatform.system}.default
     ];
-
-    extraInit = ''
-      if [ -f /opt/rust/env ]; then
-        source /opt/rust/env
-      fi
-    '';
 
     enableAllTerminfo = true;
 
@@ -98,12 +93,9 @@ in {
       BUN_INSTALL = "/opt/bun";
       BUN_INSTALL_CACHE_DIR = "/var/cache/bun";
       PNPM_HOME = "/opt/pnpm";
-      CARGO_HOME = "/opt/rust";
-      RUSTUP_HOME = "/opt/rust";
       PATH = [
         "/opt/bin"
         "/usr/local/bin"
-        "/opt/rust/bin"
         "/opt/bun/bin"
         "/opt/pnpm"
         "/opt/npm/bin"

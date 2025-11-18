@@ -13,7 +13,7 @@ if [ -d "$NAME" ]; then
   cd $NAME
   git pull -q
 else
-  git clone -q --depth=1 "$1"
+  git clone -b dev -q --depth=1 "$1"
 fi
 
 echo $NAME
