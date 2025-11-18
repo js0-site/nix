@@ -12,6 +12,9 @@
     else null;
 in {
   networking.useDHCP = vps.ip == 0;
+  boot.kernelModules = [
+    "tls"
+  ];
 
   networking.extraHosts = lib.concatStringsSep "\n" (lib.mapAttrsToList (ip: name: "${ip} ${name}") hosts);
 
