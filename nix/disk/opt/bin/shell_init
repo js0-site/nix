@@ -11,10 +11,14 @@ CURL="curl --connect-timeout 5 --max-time 10 --retry 9 --retry-delay 0 -sSfL"
 nohup fish -c "$(
   cat <<EOF
 set -x
+if [ -f ~/.config/fish/functions/fisher.fish ]; then
+fisher update
+else
 $CURL https://cdn.jsdelivr.net/gh/jorgebucaran/fisher/functions/fisher.fish | source
 fisher install jorgebucaran/fisher
 fisher install IlanCosman/tide
 fish -c "tide configure --auto --style=Lean --prompt_colors='True color' --show_time=No --lean_prompt_height='One line' --prompt_connection=Compact --prompt_connection_andor_frame_color=Dark --prompt_spacing=Compact --icons='Few icons' --transient=Yes;set -U tide_right_prompt_items cmd_duration status nix_shell context time;set -U tide_time_format '%H:%M'"
+fi
 EOF
 )" >/tmp/fish.init.log 2>&1 &
 

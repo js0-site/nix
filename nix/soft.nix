@@ -22,7 +22,8 @@ in {
     ++ addIf "ipv6_proxy"
     ++ addIf "tailscale"
     ++ addIf "redis_sentinel"
-    ++ addIf "kvrocks";
+    ++ addIf "kvrocks"
+    ++ addIf "status";
 
   environment = {
     systemPackages = with pkgs; [
