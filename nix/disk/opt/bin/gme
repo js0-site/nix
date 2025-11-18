@@ -17,5 +17,5 @@ fi
 
 git commit --amend -m"$msg"
 git fetch origin main
-git merge origin/main --no-edit --ff
+git merge origin/main --no-edit --ff || git checkout --ours $(git diff --name-only --diff-filter=U)
 git push --force-with-lease origin 2>/dev/null || (git fetch origin $branch && git merge --ff --no-edit origin/$branch && git push) || true
