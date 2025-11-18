@@ -5,8 +5,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { networkInterfaces } from "node:os";
 
 const conf = async (name, redis) => {
-  const info = (await redis.send("INFO", ["sentinel"])).split("\n");
-  for (let line of info) {
+  for (let line of (await redis.send("INFO", ["sentinel"])).split("\n")) {
     if (line.startsWith("master")) {
       const conf = new Map(
         line
@@ -19,12 +18,12 @@ const conf = async (name, redis) => {
         const address = conf.get("address");
         if (address) {
           const kvrocks_conf = "/etc/kvrocks/kvrocks.conf",
+            replicaof = "replicaof ",
             conf_li = readFileSync(kvrocks_conf, "utf8")
               .trim()
               .split("\n")
               .filter(
-                (i) =>
-                  !(i.startsWith("slaveof ") || i.startsWith("replicaof ")),
+                (i) => !(i.startsWith("slaveof ") || i.startsWith(replicaof)),
               );
 
           let is_slave = 1;
@@ -34,10 +33,15 @@ const conf = async (name, redis) => {
               break;
             }
           }
+          let info;
           if (is_slave) {
-            conf_li.push("replicaof " + address.replace(":", " "));
+            info = replicaof + address.replace(":", " ");
+            conf_li.push(info);
+          } else {
+            info = "master";
           }
           writeFileSync(kvrocks_conf, conf_li.join("\n") + "\n");
+          console.log("✅ " + name + " → " + info);
         }
         return;
       }
