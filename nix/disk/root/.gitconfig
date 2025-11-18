@@ -40,8 +40,7 @@ postBuffer = 524288000
 
 [credential]
 helper = store
-[safe]
-directory = /opt/ssl
+
 [filter "lfs"]
 clean = git-lfs clean -- %f
 smudge = git-lfs smudge -- %f

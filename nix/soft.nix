@@ -96,6 +96,7 @@ in {
       # EDITOR = "nvim";
       # VISUAL = "nvim";
       BUN_INSTALL = "/opt/bun";
+      BUN_INSTALL_CACHE_DIR = "/var/cache/bun";
       PNPM_HOME = "/opt/pnpm";
       CARGO_HOME = "/opt/rust";
       RUSTUP_HOME = "/opt/rust";
