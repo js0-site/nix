@@ -30,7 +30,6 @@ in {
 
   systemd.tmpfiles.rules = [
     "d /var/lib/kvrocks 0750 kvrocks kvrocks -"
-    "d /var/log/kvrocks 0750 kvrocks kvrocks -"
     "d /var/run/kvrocks 0750 kvrocks kvrocks -"
     "d /etc/kvrocks 0750 kvrocks kvrocks -"
   ];
@@ -59,7 +58,6 @@ in {
 
       ReadWritePaths = [
         "/var/lib/kvrocks"
-        "/var/log/kvrocks"
         "/var/run/kvrocks"
         "/etc/kvrocks"
       ];

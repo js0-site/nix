@@ -37,10 +37,9 @@ disable_cmd() {
 
 disable_cmd FLUSHDB FLUSHALL
 
-LOG_DIR=/var/log/kvrocks
 DATA_DIR=/var/lib/kvrocks
 
-rconf '^#?\s*log-dir .*' "log-dir $LOG_DIR"
+rconf '^#?\s*log-dir .*' "log-dir stdout"
 rconf '^#?\s*lua-strict-key-accessing no' 'lua-strict-key-accessing yes'
 rconf '^#?\s*masterauth .*' "masterauth $R_PASSWORD"
 rconf '^#?\s*requirepass .*' "requirepass $R_PASSWORD"
@@ -62,7 +61,8 @@ id $NAME &>/dev/null && chown -R $NAME $NAME
 
 $DIR/sh/rsync.sh $NAME $NAME /etc
 
-cd $($DIR/sh/clone_or_pull.sh https://github.com/js0-dep/nixos-kvrocks.git)
+cd $($DIR/sh/clone_or_pull.sh https://github.com/js0-dep/nixos-$NAME.git)
 
 ./build.sh
 send result/bin/ /opt/bin
+$DIR/sh/restart.sh $NAME
