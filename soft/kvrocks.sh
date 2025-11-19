@@ -49,6 +49,7 @@ rconf '^db-name .*' 'db-name db'
 rconf '^dir .*' "dir $DATA_DIR"
 rconf '^migrate-type .*' 'migrate-type raw-key-value'
 rconf '^port .*' "port $R_PORT"
+rconf '^enable-blob-cache .*' "enable-blob-cache yes"
 rconf '^repl-namespace-enabled .*' 'repl-namespace-enabled yes'
 rconf '^rocksdb.compression .*' 'rocksdb.compression zstd'
 rconf '^rocksdb.enable_blob_files .*' 'rocksdb.enable_blob_files yes'
