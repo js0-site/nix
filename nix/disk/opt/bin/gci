@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -e
+branch=$(git symbolic-ref --short -q HEAD)
+set -x
+
+root=$(git rev-parse --show-toplevel)
+cd $root
+
+git pull
+git add .
+git commit --amend --no-edit
+if [ -z "$NO_PUSH" ]; then
+  git push 2>/dev/null || (git fetch origin $branch && (git merge --ff --no-edit origin/$branch || git pull --ff --no-edit) && git push) || true
+fi
