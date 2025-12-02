@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+set -e
+branch=$(git symbolic-ref --short -q HEAD)
+set -x
+
+root=$(git rev-parse --show-toplevel)
+cd $root
+
+if [ "$branch" == "main" ]; then
+  git checkout -b dev
+fi
+
+git add .
+
+git pull origin $branch || true
+git pull origin main
+
+LAST_MSG=$(git log -1 --format=%s 2>/dev/null)
+
+if [ "$LAST_MSG" == "." ]; then
+  git commit --amend --no-edit
+else
+  git commit -m .
+fi
+
+if [ -z "$NO_PUSH" ]; then
+  git push -f
+fi
