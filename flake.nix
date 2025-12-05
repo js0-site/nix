@@ -7,8 +7,8 @@
       flake = false; # 这是一个非 flake 输入
     };
 
-    # nixpkgs.url = "github:js0-fork/nixpkgs/master";
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:js0-fork/nixpkgs/master";
+    # nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     disko.url = "github:nix-community/disko";
 

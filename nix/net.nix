@@ -6,10 +6,20 @@
   hosts,
   ...
 }: let
-  ipv6 =
-    if (vps.ip ? "v6")
-    then vps.ip.v6
+  # Native IPv6 configuration / 原生 IPv6 配置
+  ipv6 = if (vps.ip ? "v6") then vps.ip.v6 else null;
+
+  # HE tunnel auto-detection / HE 隧道自动检测
+  ipv4Addr = if (vps.ip != 0) then builtins.elemAt (lib.strings.splitString "/" vps.ip.v4.addr) 0 else null;
+  heConfigPath = ../vps/he_ipv6 + "/${ipv4Addr}.json";
+  heConfig = 
+    if ipv4Addr != null && builtins.pathExists heConfigPath
+    then builtins.fromJSON (builtins.readFile heConfigPath)
     else null;
+  
+  # Use HE tunnel when native IPv6 unavailable / 无原生 IPv6 时使用 HE 隧道
+  useHeTunnel = ipv6 == null && heConfig != null;
+  hasIpv6 = ipv6 != null || useHeTunnel;
 in {
   networking.useDHCP = vps.ip == 0;
   boot.kernelModules = [
@@ -17,6 +27,13 @@ in {
   ];
 
   networking.extraHosts = lib.concatStringsSep "\n" (lib.mapAttrsToList (ip: name: "${ip} ${name}") hosts);
+
+  # HE IPv6 tunnel (SIT) / HE IPv6 隧道
+  networking.sits.he-ipv6 = lib.mkIf useHeTunnel {
+    remote = heConfig.remote;
+    local = ipv4Addr;
+    dev = vps.interface;
+  };
 
   networking.interfaces.${vps.interface} = lib.mkIf (vps.ip != 0) {
     ipv4.addresses = [
@@ -33,54 +50,67 @@ in {
     ];
   };
 
-  networking.defaultGateway = lib.mkIf (vps.ip != 0 && vps.ip.v4.gateway != "false") vps.ip.v4.gateway;
-  networking.defaultGateway6 = lib.mkIf (vps.ip != 0 && ipv6 != null) {
-    address = ipv6.gateway;
-    interface = vps.interface;
+  # HE tunnel IPv6 address / HE 隧道地址
+  networking.interfaces.he-ipv6 = lib.mkIf useHeTunnel {
+    ipv6.addresses = [{
+      address = heConfig.ipv6_address;
+      prefixLength = heConfig.prefix_len;
+    }
+    ];
   };
 
-  # Add local route for IPv6 subnet to allow using any IP in the range
-  systemd.services.ipv6-local-route = lib.mkIf (ipv6 != null) (let
-    ipv6Addr = ipv6.segment;
-    iface = vps.interface;
-  in {
+  networking.defaultGateway = lib.mkIf (vps.ip != 0 && vps.ip.v4.gateway != "false") vps.ip.v4.gateway;
+
+  # IPv6 gateway / IPv6 网关
+  networking.defaultGateway6 = 
+    if ipv6 != null then {
+      address = ipv6.gateway;
+      interface = vps.interface;
+    }
+    else if useHeTunnel then {
+      address = heConfig.gateway;
+      interface = "he-ipv6";
+    }
+    else null;
+
+  # Local route for native IPv6 subnet / 原生 IPv6 子网本地路由
+  systemd.services.ipv6-local-route = lib.mkIf (ipv6 != null) {
     description = "Add IPv6 local route for subnet";
-    after = ["network.target" "network-addresses-${iface}.service"];
+    after = ["network.target" "network-addresses-${vps.interface}.service"];
     wants = ["network.target"];
     wantedBy = ["multi-user.target"];
     script = ''
       set -e
-      # Delete existing route if present
-      ${pkgs.iproute2}/bin/ip -6 route del local ${ipv6Addr} dev ${iface} 2>/dev/null || true
-      # Add the local route
-      ${pkgs.iproute2}/bin/ip -6 route add local ${ipv6Addr} dev ${iface}
+      ${pkgs.iproute2}/bin/ip -6 route del local ${ipv6.segment} dev ${vps.interface} 2>/dev/null || true
+      ${pkgs.iproute2}/bin/ip -6 route add local ${ipv6.segment} dev ${vps.interface}
     '';
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
     };
-  });
+  };
 
-  # Enable IPv6
-  networking.enableIPv6 = true;
+  networking.enableIPv6 = hasIpv6;
 
-  # DNS configuration - Google and Cloudflare
+  # Prioritize IPv4 over IPv6 / IPv4 优先
+  environment.etc."gai.conf".text = lib.mkIf hasIpv6 ''
+    precedence ::ffff:0:0/96  100
+  '';
+
+  # DNS servers (IPv4 + IPv6 when available) / DNS 服务器
   networking.nameservers = [
-    "8.8.8.8" # Google DNS IPv4
-    "8.8.4.4" # Google DNS IPv4 secondary
-    "1.1.1.1" # Cloudflare DNS IPv4
-    "1.0.0.1" # Cloudflare DNS IPv4 secondary
-    "2001:4860:4860::8888" # Google DNS IPv6
-    "2001:4860:4860::8844" # Google DNS IPv6 secondary
-    "2606:4700:4700::1111" # Cloudflare DNS IPv6
-    "2606:4700:4700::1001" # Cloudflare DNS IPv6 secondary
+    "8.8.8.8" "8.8.4.4"     # Google IPv4
+    "1.1.1.1" "1.0.0.1"     # Cloudflare IPv4
+  ] ++ lib.optionals hasIpv6 [
+    "2001:4860:4860::8888" "2001:4860:4860::8844"  # Google IPv6
+    "2606:4700:4700::1111" "2606:4700:4700::1001"  # Cloudflare IPv6
   ];
 
-  # Enable firewall and open necessary ports
+  # Firewall / 防火墙
   networking.firewall = {
     enable = true;
     allowedUDPPorts = [
-      443 # http3
+      443 # HTTP3
     ];
     allowedTCPPorts = [
       22 # SSH
