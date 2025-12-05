@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+if [ -z "${TMUX}" ]; then
+  session=$(whoami) # session name
+  exec tmux new-session -A -s $session
+fi
